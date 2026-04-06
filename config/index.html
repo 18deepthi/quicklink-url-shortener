@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QuickLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+
+      background: linear-gradient(-45deg, #667eea, #764ba2, #00c6ff, #0072ff);
+      background-size: 400% 400%;
+      animation: gradientBG 10s ease infinite;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* 🎥 Particles */
+    .particles span {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: white;
+      opacity: 0.4;
+      border-radius: 50%;
+      animation: float 10s linear infinite;
+    }
+
+    @keyframes float {
+      from { transform: translateY(100vh); }
+      to { transform: translateY(-10vh); }
+    }
+
+    .card {
+      backdrop-filter: blur(25px);
+      background: rgba(255,255,255,0.08);
+      padding: 40px;
+      border-radius: 20px;
+      width: 360px;
+      text-align: center;
+      color: white;
+
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+
+    input::placeholder {
+      color: #eee;
+    }
+
+    button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255,255,255,1);
+    }
+
+    .result-box {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.15);
+    }
+
+    a {
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="particles" id="particles"></div>
+
+  <div class="card">
+    <h2>🔗 QuickLink</h2>
+    <p>Smart URL Shortener</p>
+
+    <input id="urlInput" placeholder="Paste your link here..." />
+
+    <button onclick="shortenUrl()">Shorten URL</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    let currentCode = "";
+
+    // 🎥 Generate particles
+    const particlesContainer = document.getElementById("particles");
+    for (let i = 0; i < 30; i++) {
+      const span = document.createElement("span");
+      span.style.left = Math.random() * 100 + "vw";
+      span.style.animationDuration = (5 + Math.random() * 5) + "s";
+      particlesContainer.appendChild(span);
+    }
+
+    // 🧠 Auto paste detection
+    document.getElementById("urlInput").addEventListener("paste", () => {
+      setTimeout(() => shortenUrl(), 300);
+    });
+
+    async function shortenUrl() {
+      const longUrl = document.getElementById("urlInput").value;
+
+      if (!longUrl) {
+        alert("Enter a URL");
+        return;
+      }
+
+      const res = await fetch("http://localhost:5000/api/url/shorten", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ longUrl })
+      });
+
+      const data = await res.json();
+      currentCode = data.urlCode;
+
+      document.getElementById("result").innerHTML = `
+        <div class="result-box fade-in">
+          <p>✔ Short URL:</p>
+          <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>
+          <br><br>
+          <button onclick="copyLink('${data.shortUrl}')">Copy</button>
+          <button onclick="getStats()">View Analytics</button>
+          <p id="clicks"></p>
+        </div>
+      `;
+    }
+
+    function copyLink(link) {
+      navigator.clipboard.writeText(link);
+      alert("Copied!");
+    }
+
+    // 📊 FULL ANALYTICS (STEP 4 + 5)
+    async function getStats() {
+      const res = await fetch(`http://localhost:5000/api/url/stats/${currentCode}`);
+      const data = await res.json();
+
+      let count = 0;
+      const target = data.clicks;
+
+      const interval = setInterval(() => {
+        count++;
+
+        document.getElementById("clicks").innerHTML = `
+          📊 Clicks: ${count} <br>
+          🕒 Created: ${new Date(data.createdAt).toLocaleString()} <br>
+          🔥 Last Clicked: ${data.lastClicked ? new Date(data.lastClicked).toLocaleString() : "No clicks yet"}
+        `;
+
+        if (count >= target) clearInterval(interval);
+      }, 50);
+
+      const barWidth = data.clicks * 10;
+
+      setTimeout(() => {
+        document.getElementById("clicks").innerHTML += `
+          <div style="
+            margin-top:10px;
+            background:#fff2;
+            height:10px;
+            border-radius:10px;
+          ">
+            <div style="
+              width:${barWidth}px;
+              height:10px;
+              background:#00ffcc;
+              border-radius:10px;
+            "></div>
+          </div>
+        `;
+      }, 300);
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+{
+  "mongoURI": "mongodb+srv://venkatasaideepthi3_db_user:nw6eOGZGuY2sHlaS@url-shortener-cluster.jmmgprq.mongodb.net/urlshortener?retryWrites=true&w=majority",
+  "baseUrl": "http://localhost:5000"
+}
