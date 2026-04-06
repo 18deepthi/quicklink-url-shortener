@@ -1,0 +1,4 @@
+{
+  "mongoURI": "mongodb+srv://venkatasaideepthi3_db_user:YOUR_PASSWORD@url-shortener-cluster.jmmgprq.mongodb.net/urlshortener?retryWrites=true&w=majority",
+  "baseUrl": "https://quicklink-url-shortener-bgt8.onrender.com"
+}
