@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # URL Shortener Service
 
 > API to create short urls using Node, Express and MongoDB
@@ -20,3 +21,6 @@ npm start
 ### POST api/url/shorten
 
 { "longUrl": "xxxx" }
+=======
+# quicklink-url-shortener
+>>>>>>> 2d0bc7630665f6da3b5f2bcd58831922cbdc3ac2
